@@ -25,32 +25,41 @@ const resetBtn = document.getElementById("resetBtn");
 let currentResult = null;
 
 function setLoading(isLoading) {
+  if (!loadingBox) return;
+
   if (isLoading) {
     loadingBox.classList.remove("hidden");
-    checkBtn.disabled = true;
-    retryBtn.disabled = true;
-    shareBtn.disabled = true;
-    loadingText.textContent = "AI 正在认真分析你的今日状态…";
 
-    setTimeout(() => {
-      if (!loadingBox.classList.contains("hidden")) {
-        loadingText.textContent = "正在连接服务器（首次可能较慢）…";
-      }
-    }, 2500);
+    if (checkBtn) checkBtn.disabled = true;
+    if (retryBtn) retryBtn.disabled = true;
+    if (shareBtn) shareBtn.disabled = true;
+
+    if (loadingText) {
+      loadingText.textContent = "AI 正在认真分析你的今日状态…";
+
+      setTimeout(() => {
+        if (!loadingBox.classList.contains("hidden") && loadingText) {
+          loadingText.textContent = "正在连接服务器（首次可能较慢）…";
+        }
+      }, 2500);
+    }
   } else {
     loadingBox.classList.add("hidden");
-    checkBtn.disabled = false;
-    retryBtn.disabled = !currentResult;
-    shareBtn.disabled = !currentResult;
+
+    if (checkBtn) checkBtn.disabled = false;
+    if (retryBtn) retryBtn.disabled = !currentResult;
+    if (shareBtn) shareBtn.disabled = !currentResult;
   }
 }
 
 function showError(message) {
+  if (!errorBox || !errorText) return;
   errorText.textContent = message;
   errorBox.classList.remove("hidden");
 }
 
 function hideError() {
+  if (!errorBox) return;
   errorBox.classList.add("hidden");
 }
 
@@ -81,20 +90,24 @@ function sanitizeReason(text) {
 function renderResult(data) {
   currentResult = data;
 
-  resultTitle.textContent = data.title || "今日状态评估";
-  riskSubtitle.textContent = getRiskSubtitle(data.riskLevel);
+  if (resultTitle) resultTitle.textContent = data.title || "今日状态评估";
+  if (riskSubtitle) riskSubtitle.textContent = getRiskSubtitle(data.riskLevel);
 
-  probabilityValue.textContent = `${data.probability}%`;
-  probabilityValue.className = "probability " + (data.riskLevel || "low");
+  if (probabilityValue) {
+    probabilityValue.textContent = `${data.probability}%`;
+    probabilityValue.className = "probability " + (data.riskLevel || "low");
+  }
 
-  resultReason.textContent = sanitizeReason(data.reason);
-  resultTips.textContent = `建议：${data.tips || "今天尽量稳一点。"}`;
-  resultDisclaimer.textContent =
-    data.disclaimer || "仅供娱乐，不构成任何现实预测或建议。";
+  if (resultReason) resultReason.textContent = sanitizeReason(data.reason);
+  if (resultTips) resultTips.textContent = `建议：${data.tips || "今天尽量稳一点。"}`;
+  if (resultDisclaimer) {
+    resultDisclaimer.textContent =
+      data.disclaimer || "仅供娱乐，不构成任何现实预测或建议。";
+  }
 
-  resultCard.classList.remove("hidden");
-  retryBtn.disabled = false;
-  shareBtn.disabled = false;
+  if (resultCard) resultCard.classList.remove("hidden");
+  if (retryBtn) retryBtn.disabled = false;
+  if (shareBtn) shareBtn.disabled = false;
 }
 
 async function fetchCheck() {
@@ -102,17 +115,22 @@ async function fetchCheck() {
   setLoading(true);
 
   try {
+    console.log("开始请求:", API_URL);
+
     const res = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        text: inputText.value.trim()
+        text: inputText ? inputText.value.trim() : ""
       })
     });
 
+    console.log("响应状态:", res.status);
+
     const data = await res.json();
+    console.log("响应数据:", data);
 
     if (!res.ok) {
       throw new Error(data.error || "服务器返回异常");
@@ -120,6 +138,7 @@ async function fetchCheck() {
 
     renderResult(data);
   } catch (err) {
+    console.error("请求失败:", err);
     showError(err.message || "请求失败，请稍后再试");
   } finally {
     setLoading(false);
@@ -127,7 +146,7 @@ async function fetchCheck() {
 }
 
 async function shareResultAsImage() {
-  if (!currentResult) return;
+  if (!currentResult || !resultCard) return;
 
   const canvas = await html2canvas(resultCard, {
     backgroundColor: null,
@@ -157,26 +176,32 @@ async function shareResultAsImage() {
   });
 }
 
-checkBtn.addEventListener("click", fetchCheck);
+if (checkBtn) checkBtn.addEventListener("click", fetchCheck);
 
-retryBtn.addEventListener("click", () => {
-  if (currentResult) fetchCheck();
-});
+if (retryBtn) {
+  retryBtn.addEventListener("click", () => {
+    if (currentResult) fetchCheck();
+  });
+}
 
-shareBtn.addEventListener("click", shareResultAsImage);
+if (shareBtn) shareBtn.addEventListener("click", shareResultAsImage);
 
-resetBtn.addEventListener("click", () => {
-  inputText.value = "";
-  currentResult = null;
-  resultCard.classList.add("hidden");
-  errorBox.classList.add("hidden");
-  retryBtn.disabled = true;
-  shareBtn.disabled = true;
-});
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    if (inputText) inputText.value = "";
+    currentResult = null;
+    if (resultCard) resultCard.classList.add("hidden");
+    if (errorBox) errorBox.classList.add("hidden");
+    if (retryBtn) retryBtn.disabled = true;
+    if (shareBtn) shareBtn.disabled = true;
+  });
+}
 
-clearInputBtn.addEventListener("click", () => {
-  inputText.value = "";
-});
+if (clearInputBtn) {
+  clearInputBtn.addEventListener("click", () => {
+    if (inputText) inputText.value = "";
+  });
+}
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

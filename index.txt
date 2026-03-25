@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>DeathCheck</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f1020" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <!-- 样式 -->
+  <link rel="stylesheet" href="./style.css" />
+
+  <meta name="description" content="输入一句你今天的状态，或者直接随机测。" />
+</head>
+
+<body>
+  <div class="app-shell">
+    <main class="container">
+
+      <header class="header">
+        <div class="brand-row">
+          <h1>DeathCheck</h1>
+          <span class="beta-badge">BETA</span>
+        </div>
+        <p class="subtitle">输入一句你今天的状态，或者直接随机测</p>
+        <p class="subnote">仅用于娱乐化状态评估，不提供医疗建议</p>
+      </header>
+
+      <section class="input-card">
+        <div class="section-title-row">
+          <h2>今天什么情况？</h2>
+          <button id="clearInputBtn" class="text-btn" type="button">清空输入</button>
+        </div>
+
+        <textarea
+          id="inputText"
+          placeholder="比如：昨晚没睡好，今天还要开会"
+          rows="5"
+        ></textarea>
+
+        <div class="hint-row">
+          <span>不输入也可以直接随机测</span>
+        </div>
+      </section>
+
+      <section id="loadingBox" class="loading-box hidden">
+        <div class="spinner"></div>
+        <p id="loadingText">AI 正在认真分析你的今日状态…</p>
+        <p class="loading-note">免费服务器首次唤醒可能会慢一点</p>
+      </section>
+
+      <section id="errorBox" class="error-box hidden">
+        <h3>暂时没拿到结果</h3>
+        <p id="errorText">稍等几秒再试，或者直接再点一次</p>
+      </section>
+
+      <section id="resultCard" class="result-card hidden">
+        <h2 id="resultTitle">今天稳得很</h2>
+        <p id="riskSubtitle" class="risk-subtitle">今天整体偏稳</p>
+
+        <div class="probability-wrap">
+          <div id="probabilityValue" class="probability low">8%</div>
+          <div class="probability-label">今日风险概率</div>
+        </div>
+
+        <p id="resultReason" class="result-reason">
+          今天整体像普通模式，风险不高，但也别边走路边发呆。
+        </p>
+
+        <p id="resultTips" class="result-tips">
+          建议：正常发挥就行。
+        </p>
+
+        <p id="resultDisclaimer" class="result-disclaimer">
+          仅供娱乐，不构成任何现实预测或建议。
+        </p>
+      </section>
+
+      <section class="actions">
+        <button id="checkBtn" class="primary-btn" type="button">立即检测</button>
+        <button id="retryBtn" class="secondary-btn" type="button" disabled>再测一次</button>
+        <button id="shareBtn" class="secondary-btn" type="button" disabled>分享图片</button>
+        <button id="resetBtn" class="secondary-btn" type="button">清空重来</button>
+      </section>
+
+      <section class="footer-note">
+        <p>本应用仅供娱乐和参考</p>
+        <p>不构成医学、心理或安全建议</p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 依赖 -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- 主逻辑 -->
+  <script src="./app.js"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
