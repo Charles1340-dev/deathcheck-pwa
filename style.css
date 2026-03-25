@@ -1,0 +1,295 @@
+:root {
+  --bg1: #090b16;
+  --bg2: #120b22;
+  --bg3: #1a0c12;
+  --card: rgba(255, 255, 255, 0.12);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.72);
+  --subtle: rgba(255, 255, 255, 0.48);
+  --yellow: #ffd84d;
+  --green: #72e36f;
+  --orange: #ffae42;
+  --red: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
+    "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+  color: var(--text);
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+}
+
+.container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 18px 40px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 300;
+}
+
+.beta-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #101010;
+  background: rgba(255,255,255,0.92);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.subtitle {
+  margin: 10px 0 6px;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.subnote {
+  margin: 0;
+  color: var(--subtle);
+  font-size: 0.85rem;
+}
+
+.input-card,
+.loading-box,
+.error-box,
+.result-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 18px;
+  backdrop-filter: blur(16px);
+}
+
+.input-card {
+  margin-bottom: 16px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.section-title-row h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.text-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  min-height: 130px;
+}
+
+textarea::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+.hint-row {
+  margin-top: 10px;
+  color: var(--subtle);
+  font-size: 0.86rem;
+}
+
+.loading-box,
+.error-box,
+.result-card {
+  margin-bottom: 16px;
+}
+
+.loading-box {
+  text-align: center;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid rgba(255,255,255,0.15);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: spin 0.9s linear infinite;
+}
+
+.loading-note {
+  color: var(--subtle);
+  font-size: 0.84rem;
+  margin-top: 8px;
+}
+
+.error-box h3 {
+  margin: 0 0 8px;
+  color: var(--yellow);
+}
+
+.error-box p {
+  margin: 0;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.6;
+}
+
+.result-card {
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+
+.result-card h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.risk-subtitle {
+  margin: 10px 0 18px;
+  color: rgba(255,255,255,0.78);
+  font-size: 0.96rem;
+}
+
+.probability-wrap {
+  margin-bottom: 18px;
+}
+
+.probability {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.probability.low {
+  color: var(--green);
+}
+
+.probability.medium {
+  color: var(--orange);
+}
+
+.probability.high {
+  color: var(--red);
+}
+
+.probability-label {
+  margin-top: 6px;
+  color: rgba(255,255,255,0.72);
+  font-size: 0.95rem;
+}
+
+.result-reason {
+  margin: 0 0 14px;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.result-tips {
+  margin: 0 0 10px;
+  color: rgba(255,255,255,0.92);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.result-disclaimer {
+  margin: 0;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.83rem;
+}
+
+.actions {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+button {
+  border: none;
+  border-radius: 18px;
+  padding: 16px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #ffffff;
+  color: #101010;
+}
+
+.secondary-btn {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.footer-note {
+  text-align: center;
+  color: var(--subtle);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.footer-note p {
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

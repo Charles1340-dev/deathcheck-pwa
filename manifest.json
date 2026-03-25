@@ -1,0 +1,21 @@
+{
+  "name": "DeathCheck",
+  "short_name": "DeathCheck",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f1020",
+  "theme_color": "#0f1020",
+  "description": "输入一句你今天的状态，或者直接随机测。",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
