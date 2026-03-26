@@ -30,8 +30,8 @@ let loadingTimer = null;
 
 function getRiskSubtitle(riskLevel) {
   if (riskLevel === "low") return "今天整体偏稳";
-  if (riskLevel === "medium") return "今天需要多留个心";
-  return "今天建议明显谨慎一点";
+  if (riskLevel === "medium") return "今天建议谨慎一点";
+  return "今天要多留神";
 }
 
 function setProbabilityStyle(el, riskLevel) {
@@ -47,19 +47,19 @@ function formatProbability(value) {
 
 function startLoadingTextCycle() {
   const messages = [
-    "正在识别你输入里的关键事件…",
-    "正在判断哪些信息真正影响这次结果…",
-    "正在生成更贴近你文本的解释…",
-    "正在整理最终结果，请再等一下…"
+    "正在整理你今天这点情况…",
+    "正在把话说得更像人一点…",
+    "正在想一个不那么像机器的说法…",
+    "马上就好，再等一下…"
   ];
 
   let index = 0;
-  if (loadingText) loadingText.textContent = messages[0];
+  loadingText.textContent = messages[0];
 
   loadingTimer = setInterval(() => {
     index = (index + 1) % messages.length;
-    if (loadingText) loadingText.textContent = messages[index];
-  }, 2200);
+    loadingText.textContent = messages[index];
+  }, 1800);
 }
 
 function stopLoadingTextCycle() {
@@ -70,40 +70,35 @@ function stopLoadingTextCycle() {
 }
 
 function setLoading(isLoading) {
-  if (!loadingBox) return;
-
   if (isLoading) {
     loadingBox.classList.remove("hidden");
-    if (checkBtn) checkBtn.disabled = true;
-    if (retryBtn) retryBtn.disabled = true;
-    if (shareBtn) shareBtn.disabled = true;
+    checkBtn.disabled = true;
+    retryBtn.disabled = true;
+    shareBtn.disabled = true;
     startLoadingTextCycle();
   } else {
     loadingBox.classList.add("hidden");
-    if (checkBtn) checkBtn.disabled = false;
-    if (retryBtn) retryBtn.disabled = !currentResult;
-    if (shareBtn) shareBtn.disabled = !currentResult;
+    checkBtn.disabled = false;
+    retryBtn.disabled = !currentResult;
+    shareBtn.disabled = !currentResult;
     stopLoadingTextCycle();
   }
 }
 
 function showError(message) {
-  if (!errorBox || !errorText) return;
   errorText.textContent = message || "请求失败，请稍后再试";
   errorBox.classList.remove("hidden");
 }
 
 function hideError() {
-  if (!errorBox) return;
   errorBox.classList.add("hidden");
 }
 
 function hideSupport() {
-  if (supportCard) supportCard.classList.add("hidden");
+  supportCard.classList.add("hidden");
 }
 
 function renderSupport(text) {
-  if (!supportCard || !supportMessage) return;
   if (!text || !text.trim()) {
     hideSupport();
     return;
@@ -115,26 +110,21 @@ function renderSupport(text) {
 function renderResult(data) {
   currentResult = data;
 
-  if (resultTitle) resultTitle.textContent = data.title || "今日结果";
-  if (riskSubtitle) riskSubtitle.textContent = getRiskSubtitle(data.riskLevel);
+  resultTitle.textContent = data.title || "今天偏稳";
+  riskSubtitle.textContent = getRiskSubtitle(data.riskLevel);
 
-  if (probabilityValue) {
-    probabilityValue.textContent = formatProbability(data.probability);
-    setProbabilityStyle(probabilityValue, data.riskLevel);
-  }
+  probabilityValue.textContent = formatProbability(data.probability);
+  setProbabilityStyle(probabilityValue, data.riskLevel);
 
-  if (resultReason) resultReason.textContent = data.reason || "";
-  if (resultTips) resultTips.textContent = `建议：${data.tips || "今天尽量稳一点。"} `;
-  if (resultDisclaimer) {
-    resultDisclaimer.textContent =
-      data.disclaimer || "仅供娱乐，不构成任何现实预测或建议。";
-  }
+  resultReason.textContent = data.reason || "";
+  resultTips.textContent = `建议：${data.tips || "今天稳一点就好。"} `;
+  resultDisclaimer.textContent =
+    data.disclaimer || "仅供娱乐，不构成任何现实预测或建议。";
 
   renderSupport(data.supportMessage || "");
-
-  if (resultCard) resultCard.classList.remove("hidden");
-  if (retryBtn) retryBtn.disabled = false;
-  if (shareBtn) shareBtn.disabled = false;
+  resultCard.classList.remove("hidden");
+  retryBtn.disabled = false;
+  shareBtn.disabled = false;
 }
 
 async function fetchCheck() {
@@ -149,7 +139,7 @@ async function fetchCheck() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        text: inputText ? inputText.value.trim() : ""
+        text: inputText.value.trim()
       })
     });
 
@@ -157,7 +147,7 @@ async function fetchCheck() {
 
     if (!res.ok) {
       if (data.code === "DAILY_LIMIT_EXCEEDED") {
-        throw new Error(data.error || "你今天的检测次数已用完。");
+        throw new Error(data.error || "你今天的检测次数已经用完了。");
       }
       throw new Error(data.error || "服务器返回异常");
     }
@@ -191,10 +181,10 @@ async function shareCurrentResult() {
         await navigator.share({
           files: [file],
           title: "DeathCheck",
-          text: "我的今日风险结果"
+          text: "我的今日结果"
         });
         return;
-      } catch (_) {}
+      } catch (e) {}
     }
 
     const link = document.createElement("a");
@@ -204,32 +194,24 @@ async function shareCurrentResult() {
   });
 }
 
-if (checkBtn) checkBtn.addEventListener("click", fetchCheck);
+checkBtn.addEventListener("click", fetchCheck);
 
-if (retryBtn) {
-  retryBtn.addEventListener("click", () => {
-    fetchCheck();
-  });
-}
+retryBtn.addEventListener("click", () => {
+  fetchCheck();
+});
 
-if (shareBtn) {
-  shareBtn.addEventListener("click", shareCurrentResult);
-}
+shareBtn.addEventListener("click", shareCurrentResult);
 
-if (resetBtn) {
-  resetBtn.addEventListener("click", () => {
-    if (inputText) inputText.value = "";
-    currentResult = null;
-    hideError();
-    hideSupport();
-    if (resultCard) resultCard.classList.add("hidden");
-    if (retryBtn) retryBtn.disabled = true;
-    if (shareBtn) shareBtn.disabled = true;
-  });
-}
+resetBtn.addEventListener("click", () => {
+  inputText.value = "";
+  currentResult = null;
+  hideError();
+  hideSupport();
+  resultCard.classList.add("hidden");
+  retryBtn.disabled = true;
+  shareBtn.disabled = true;
+});
 
-if (clearInputBtn) {
-  clearInputBtn.addEventListener("click", () => {
-    if (inputText) inputText.value = "";
-  });
-}
+clearInputBtn.addEventListener("click", () => {
+  inputText.value = "";
+});
