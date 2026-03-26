@@ -1,4 +1,4 @@
-const API_URL = "https://deathcheck-backend.onrender.com/api/check";
+const API_URL = "/api/check";
 
 const inputText = document.getElementById("inputText");
 const clearInputBtn = document.getElementById("clearInputBtn");
@@ -8,6 +8,9 @@ const loadingText = document.getElementById("loadingText");
 
 const errorBox = document.getElementById("errorBox");
 const errorText = document.getElementById("errorText");
+
+const supportCard = document.getElementById("supportCard");
+const supportMessage = document.getElementById("supportMessage");
 
 const resultCard = document.getElementById("resultCard");
 const resultTitle = document.getElementById("resultTitle");
@@ -23,38 +26,70 @@ const shareBtn = document.getElementById("shareBtn");
 const resetBtn = document.getElementById("resetBtn");
 
 let currentResult = null;
+let loadingTimer = null;
+
+function getRiskSubtitle(riskLevel) {
+  if (riskLevel === "low") return "今天整体偏稳";
+  if (riskLevel === "medium") return "今天需要多留个心";
+  return "今天建议明显谨慎一点";
+}
+
+function setProbabilityStyle(el, riskLevel) {
+  if (!el) return;
+  el.classList.remove("low", "medium", "high");
+  el.classList.add(riskLevel || "low");
+}
+
+function formatProbability(value) {
+  const num = Number(value || 0);
+  return Number.isInteger(num) ? `${num}%` : `${num.toFixed(1)}%`;
+}
+
+function startLoadingTextCycle() {
+  const messages = [
+    "正在识别你输入里的关键事件…",
+    "正在判断哪些信息真正影响这次结果…",
+    "正在生成更贴近你文本的解释…",
+    "正在整理最终结果，请再等一下…"
+  ];
+
+  let index = 0;
+  if (loadingText) loadingText.textContent = messages[0];
+
+  loadingTimer = setInterval(() => {
+    index = (index + 1) % messages.length;
+    if (loadingText) loadingText.textContent = messages[index];
+  }, 2200);
+}
+
+function stopLoadingTextCycle() {
+  if (loadingTimer) {
+    clearInterval(loadingTimer);
+    loadingTimer = null;
+  }
+}
 
 function setLoading(isLoading) {
   if (!loadingBox) return;
 
   if (isLoading) {
     loadingBox.classList.remove("hidden");
-
     if (checkBtn) checkBtn.disabled = true;
     if (retryBtn) retryBtn.disabled = true;
     if (shareBtn) shareBtn.disabled = true;
-
-    if (loadingText) {
-      loadingText.textContent = "AI 正在认真分析你的今日状态…";
-
-      setTimeout(() => {
-        if (!loadingBox.classList.contains("hidden") && loadingText) {
-          loadingText.textContent = "正在连接服务器（首次可能较慢）…";
-        }
-      }, 2500);
-    }
+    startLoadingTextCycle();
   } else {
     loadingBox.classList.add("hidden");
-
     if (checkBtn) checkBtn.disabled = false;
     if (retryBtn) retryBtn.disabled = !currentResult;
     if (shareBtn) shareBtn.disabled = !currentResult;
+    stopLoadingTextCycle();
   }
 }
 
 function showError(message) {
   if (!errorBox || !errorText) return;
-  errorText.textContent = message;
+  errorText.textContent = message || "请求失败，请稍后再试";
   errorBox.classList.remove("hidden");
 }
 
@@ -63,47 +98,39 @@ function hideError() {
   errorBox.classList.add("hidden");
 }
 
-function getRiskSubtitle(riskLevel) {
-  if (riskLevel === "low") return "今天整体偏稳";
-  if (riskLevel === "medium") return "今天稍微收着点";
-  return "今天建议谨慎一点";
+function hideSupport() {
+  if (supportCard) supportCard.classList.add("hidden");
 }
 
-function sanitizeReason(text) {
-  const badPhrases = [
-    "用户没有提供",
-    "按普通平静的一天分析",
-    "根据用户输入",
-    "根据你的输入",
-    "普通平静的一天",
-    "分析如下"
-  ];
-
-  for (const phrase of badPhrases) {
-    if ((text || "").includes(phrase)) {
-      return "今天整体像普通模式，风险不高，但也别边走路边发呆。";
-    }
+function renderSupport(text) {
+  if (!supportCard || !supportMessage) return;
+  if (!text || !text.trim()) {
+    hideSupport();
+    return;
   }
-  return text || "";
+  supportMessage.textContent = text.trim();
+  supportCard.classList.remove("hidden");
 }
 
 function renderResult(data) {
   currentResult = data;
 
-  if (resultTitle) resultTitle.textContent = data.title || "今日状态评估";
+  if (resultTitle) resultTitle.textContent = data.title || "今日结果";
   if (riskSubtitle) riskSubtitle.textContent = getRiskSubtitle(data.riskLevel);
 
   if (probabilityValue) {
-    probabilityValue.textContent = `${data.probability}%`;
-    probabilityValue.className = "probability " + (data.riskLevel || "low");
+    probabilityValue.textContent = formatProbability(data.probability);
+    setProbabilityStyle(probabilityValue, data.riskLevel);
   }
 
-  if (resultReason) resultReason.textContent = sanitizeReason(data.reason);
-  if (resultTips) resultTips.textContent = `建议：${data.tips || "今天尽量稳一点。"}`;
+  if (resultReason) resultReason.textContent = data.reason || "";
+  if (resultTips) resultTips.textContent = `建议：${data.tips || "今天尽量稳一点。"} `;
   if (resultDisclaimer) {
     resultDisclaimer.textContent =
       data.disclaimer || "仅供娱乐，不构成任何现实预测或建议。";
   }
+
+  renderSupport(data.supportMessage || "");
 
   if (resultCard) resultCard.classList.remove("hidden");
   if (retryBtn) retryBtn.disabled = false;
@@ -112,11 +139,10 @@ function renderResult(data) {
 
 async function fetchCheck() {
   hideError();
+  hideSupport();
   setLoading(true);
 
   try {
-    console.log("开始请求:", API_URL);
-
     const res = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -127,12 +153,12 @@ async function fetchCheck() {
       })
     });
 
-    console.log("响应状态:", res.status);
-
     const data = await res.json();
-    console.log("响应数据:", data);
 
     if (!res.ok) {
+      if (data.code === "DAILY_LIMIT_EXCEEDED") {
+        throw new Error(data.error || "你今天的检测次数已用完。");
+      }
       throw new Error(data.error || "服务器返回异常");
     }
 
@@ -145,7 +171,7 @@ async function fetchCheck() {
   }
 }
 
-async function shareResultAsImage() {
+async function shareCurrentResult() {
   if (!currentResult || !resultCard) return;
 
   const canvas = await html2canvas(resultCard, {
@@ -156,14 +182,16 @@ async function shareResultAsImage() {
   canvas.toBlob(async (blob) => {
     if (!blob) return;
 
-    const file = new File([blob], "deathcheck-result.png", { type: "image/png" });
+    const file = new File([blob], "deathcheck-result.png", {
+      type: "image/png"
+    });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
           title: "DeathCheck",
-          text: "我的今日状态评估结果"
+          text: "我的今日风险结果"
         });
         return;
       } catch (_) {}
@@ -180,18 +208,21 @@ if (checkBtn) checkBtn.addEventListener("click", fetchCheck);
 
 if (retryBtn) {
   retryBtn.addEventListener("click", () => {
-    if (currentResult) fetchCheck();
+    fetchCheck();
   });
 }
 
-if (shareBtn) shareBtn.addEventListener("click", shareResultAsImage);
+if (shareBtn) {
+  shareBtn.addEventListener("click", shareCurrentResult);
+}
 
 if (resetBtn) {
   resetBtn.addEventListener("click", () => {
     if (inputText) inputText.value = "";
     currentResult = null;
+    hideError();
+    hideSupport();
     if (resultCard) resultCard.classList.add("hidden");
-    if (errorBox) errorBox.classList.add("hidden");
     if (retryBtn) retryBtn.disabled = true;
     if (shareBtn) shareBtn.disabled = true;
   });
@@ -200,11 +231,5 @@ if (resetBtn) {
 if (clearInputBtn) {
   clearInputBtn.addEventListener("click", () => {
     if (inputText) inputText.value = "";
-  });
-}
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(console.error);
   });
 }

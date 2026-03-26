@@ -284,8 +284,31 @@ button:disabled {
   margin: 0;
 }
 
+.support-card {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(120, 95, 40, 0.18);
+  border: 1px solid rgba(255, 220, 120, 0.28);
+  color: rgba(255, 245, 220, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+.support-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.support-card p {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 15px;
+  color: rgba(255, 245, 220, 0.92);
+}
+
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 @keyframes spin {

@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>DeathCheck</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#0f1020" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-
-  <!-- 样式 -->
   <link rel="stylesheet" href="./style.css" />
 
-  <meta name="description" content="输入一句你今天的状态，或者直接随机测。" />
+  <meta name="description" content="输入你今天的状态，得到今日死亡概率。" />
 </head>
 
 <body>
@@ -25,8 +22,8 @@
           <h1>DeathCheck</h1>
           <span class="beta-badge">BETA</span>
         </div>
-        <p class="subtitle">输入一句你今天的状态，或者直接随机测</p>
-        <p class="subnote">仅用于娱乐化状态评估，不提供医疗建议</p>
+        <p class="subtitle">输入今天发生的事，比如症状、睡眠、压力、行程</p>
+        <p class="subnote">仅用于娱乐化风险解读，不提供医疗建议</p>
       </header>
 
       <section class="input-card">
@@ -37,15 +34,19 @@
 
         <textarea
           id="inputText"
-          placeholder="比如：昨晚没睡好，今天还要开会"
+          placeholder="比如：昨晚只睡了3小时，今天还要开长途车 / 昨天查出严重疾病"
           rows="5"
         ></textarea>
+
+        <div class="hint-row">
+          <span>不输入也可以直接随机测，但输入越具体，预测越准</span>
+        </div>
       </section>
 
       <section id="loadingBox" class="loading-box hidden">
         <div class="spinner"></div>
-        <p id="loadingText">AI 正在认真分析你的今日状态…</p>
-        <p class="loading-note">首次唤醒可能会慢一点</p>
+        <p id="loadingText">正在识别你输入里的关键事件…</p>
+        <p class="loading-note">正在努力算命，请耐心等待...</p>
       </section>
 
       <section id="errorBox" class="error-box hidden">
@@ -53,17 +54,22 @@
         <p id="errorText">稍等几秒再试，或者直接再点一次</p>
       </section>
 
+      <section id="supportCard" class="support-card hidden">
+        <h3>先把自己照顾好</h3>
+        <p id="supportMessage"></p>
+      </section>
+
       <section id="resultCard" class="result-card hidden">
         <h2 id="resultTitle">今天稳得很</h2>
         <p id="riskSubtitle" class="risk-subtitle">今天整体偏稳</p>
 
         <div class="probability-wrap">
-          <div id="probabilityValue" class="probability low">8%</div>
-          <div class="probability-label">今日风险概率</div>
+          <div id="probabilityValue" class="probability low">0.6%</div>
+          <div class="probability-label">今日死亡概率</div>
         </div>
 
         <p id="resultReason" class="result-reason">
-          今天整体像普通模式，风险不高，但也别边走路边发呆。
+          今天整体像普通模式，风险不高。
         </p>
 
         <p id="resultTips" class="result-tips">
@@ -90,13 +96,9 @@
     </main>
   </div>
 
-  <!-- 依赖 -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-  <!-- 主逻辑 -->
   <script src="./app.js"></script>
 
-  <!-- Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
